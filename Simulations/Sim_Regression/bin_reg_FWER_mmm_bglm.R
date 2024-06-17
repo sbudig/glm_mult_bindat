@@ -19,8 +19,12 @@ library("arm") # for bayesglm
 # corr: correlation between endpoints
 # di: dose groups
 # alpha: type 1 error
-
-sim_mmm_bin <- function(nsim, 
+# This function simulates correlated binary data with the corresponding parameters. 
+# A BayesGLM is fitted to the simulated data for each endpoint and 
+# then a correction for the p-values of the parameters of interest is performed 
+# using the MMM approach. The parameters used and the corresponding results to obtain 
+# the FWER are returned in a data frame. 
+sim_mmm_bin_fwer_mmm_bglm <- function(nsim, 
                         ntrt, 
                         pis, 
                         nresp, 
@@ -91,11 +95,11 @@ sim_mmm_bin <- function(nsim,
     nreji = nreji, nrej = nrej))
 }
 
-system.time(sim_mmm_bin_res <- do.call(rbind,apply(as.matrix(simdat_reg_FWER), 1, 
-                                                   function(x){sim_mmm_bin(nsim=unname(x[1]),pis=unname(x[2]),nresp=unname(x[3]), 
+system.time(sim_mmm_bin_fwer_mmm_bglm_res <- do.call(rbind,apply(as.matrix(simdat_reg_FWER), 1, 
+                                                   function(x){sim_mmm_bin_fwer_mmm_bglm(nsim=unname(x[1]),pis=unname(x[2]),nresp=unname(x[3]), 
                                                                            ntrt=unname(x[4]),size=unname(x[5]),corr=unname(x[6]))})))
 
-write.csv(sim_mmm_bin_res, ".\\intermediate_results\\bin_reg_FWER_mmm_bglm_1.csv", row.names = FALSE)
+write.csv(sim_mmm_bin_fwer_mmm_bglm_res, ".\\intermediate_results\\bin_reg_FWER_mmm_bglm_1.csv", row.names = FALSE)
 
 
 

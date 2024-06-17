@@ -10,47 +10,74 @@ library("tidyverse")
 
 ## logit function
 # p is probability(event)
-logit <- function(p) {
-  log(p / (1 - p))
+# returns the probability on the logit scale
+logit <- function(p){
+  log(p/(1-p))
 }
 
 ## backtransform logit in p(event)
-expit <- function(x) {
-  exp(x) / (1 + exp(x))
+# returns the probability of occurence (event)
+expit <- function(x){
+  exp(x)/(1 + exp(x))
 }
 
 ## fill matrix with specific dimension and mi
 # ndos: ncolumns
 # nresp: nrows
 # value to fill each cell
-mi0ed <- function(mi = 10,
-                  ndos = 4,
-                  nresp = 3) {
-  mimat <- matrix(rep(mi, times = ndos * nresp), ncol = ndos)
+# returns a matrix with dimensions ndos (columns) and nresp (rows)
+# and cells filled with mi
+mi0ed <- function(mi=10, ndos=4, nresp=3){
+  mimat <- matrix(rep(mi, times=ndos*nresp), 
+                  ncol=ndos)
   return(mimat)
 }
 
 ## helper function for parameter input; 
 ## build a list of binomial distribution parameters
-paralistbin <- function(size = 1, prob) {
-  sv <- rep(size, length.out = length(prob))
+# size: cluster size
+# prob: probability of occurence
+# returns a list with the parameters of the binomial distribution (p and n)
+paralistbin <- function(size=1, prob){
+  sv <- rep(size, length.out=length(prob))
   outlist <- list()
-  for (i in 1:length(prob)) {
-    outlist[[i]] <- list(size = sv[i], prob = prob[i])
-  }
+  for(i in 1:length(prob)){outlist[[i]] <- list(size=sv[i], 
+                                                prob=prob[i])}
   return(outlist)
-}
+} 
 
 # paralistbin(size=10, prob=c(0.6,0.2,0.2))
 
-# Generate correlated binary data function --------------------------------
+# helper function for correlated bin
+# Converts the matrix my.mat to a vector, replacing any zeros with 999.
+# Finds the indices of the minimum value in this transformed vector.
+# Converts these vector indices back to row and column indices of the original matrix.
+# Returns the row and column indices as a vector.
+loc.min <- function(my.mat, d) {
+  w = is.matrix(my.mat)
+  if (w == F) {
+    stop("This is not a matrix!\n")
+  }
+  if (nrow(my.mat) != ncol(my.mat)) {
+    stop("This is not a square matrix!\n")
+  }
+  n = nrow(my.mat)
+  my.vec = as.vector(t(my.mat))
+  my.vec[my.vec == 0] = 999
+  my.index = min((1:length(my.vec))[my.vec == min(my.vec)])
+  row.index = floor((my.index - 1) / n) + 1
+  col.index = my.index - d * floor((my.index - 1) / n)
+  c(row.index, col.index)
+}
+
 # generate correlated binary data with respective parameters for regression models
+# (for Park correlation check simulation)
 # ntrt: sample size of group
 # mutrt: probability of group on logitscale
 # covmat: correlation matrix of endpoints
 # size: cluster size (binary data = 1)
-
-simind_corbin_prv <- function(ntrt, mutrt, covmat, size) {
+# returns a data frame with the correlated binary data depending on the parameter values
+simind_corbin_prv_park <- function(ntrt, mutrt, covmat, size) {
   noend <- ncol(covmat)
   ltrt <- names(ntrt)
   nvectrt <- as.vector(ntrt)
@@ -87,12 +114,13 @@ simind_corbin_prv <- function(ntrt, mutrt, covmat, size) {
   return(OUTDAT)
 }
 
-# internal function of simind_corbin_prv to obtain respective binary data for each group
+# internal function of simind_corbin_prv_park to obtain respective binary data for each group
 # no.row: for which group
 # d: number of endpoints
 # prop.vec: probability vector of respective group
 # corr.mat: correlation matrix of endpoints
-
+# returns a matrix of correlated binary data based on the provided probability 
+# vector and correlation matrix.
 draw_correlated_binary <- function (no.row, d, prop.vec, corr.mat)
 {
   alpha = matrix(0, d, d)
@@ -194,29 +222,6 @@ draw_correlated_binary <- function (no.row, d, prop.vec, corr.mat)
   }
 }
 
-# helper function for correlated bin
-# Converts the matrix my.mat to a vector, replacing any zeros with 999.
-# Finds the indices of the minimum value in this transformed vector.
-# Converts these vector indices back to row and column indices of the original matrix.
-# Returns the row and column indices as a vector.
-
-loc.min <- function(my.mat, d) {
-  w = is.matrix(my.mat)
-  if (w == F) {
-    stop("This is not a matrix!\n")
-  }
-  if (nrow(my.mat) != ncol(my.mat)) {
-    stop("This is not a square matrix!\n")
-  }
-  n = nrow(my.mat)
-  my.vec = as.vector(t(my.mat))
-  my.vec[my.vec == 0] = 999
-  my.index = min((1:length(my.vec))[my.vec == min(my.vec)])
-  row.index = floor((my.index - 1) / n) + 1
-  col.index = my.index - d * floor((my.index - 1) / n)
-  c(row.index, col.index)
-}
-
 # Simulation Function -----------------------------------------------------
 # nsim: number of simulation runs
 # di: dose groups
@@ -226,9 +231,8 @@ loc.min <- function(my.mat, d) {
 # alpha: type 1 error
 # This function generates correlated binary data with specific correlations
 # Then the correlation is estimated from the data with the Pearson and MMM method.
-# The result is saved in a data frame.
-
-sim_mmm_bin <-
+# A data frame with the results of the simulation is returned
+sim_mmm_bin_park <-
   function(nsim,
            di = c(0, 2, 5, 10),
            ntrt,
@@ -286,7 +290,7 @@ sim_mmm_bin <-
     for (i in 1:nsim)
     {
       dati <-
-        simind_corbin_prv(
+        simind_corbin_prv_park(
           ntrt = NTRT,
           mutrt = MUTRT,
           covmat = VCOV,
@@ -361,10 +365,10 @@ simdat <- expand.grid(
   size = 1
 )
 
-system.time(sim_mmm_bin_res <-
+system.time(sim_mmm_bin_park_res <-
               do.call(rbind, apply(as.matrix(simdat), 1,
                                    function(x) {
-                                     sim_mmm_bin(
+                                     sim_mmm_bin_park(
                                        nsim = unname(x[1]),
                                        ntrt = unname(x[2]),
                                        pi0 = unname(x[3]),
@@ -373,7 +377,7 @@ system.time(sim_mmm_bin_res <-
                                      )
                                    })))
 
-write.csv(sim_mmm_bin_res, ".\\intermediate_results\\bin_cor_endpoints.csv", row.names = FALSE)
+write.csv(sim_mmm_bin_park_res, ".\\intermediate_results\\bin_cor_endpoints.csv", row.names = FALSE)
 
 
 

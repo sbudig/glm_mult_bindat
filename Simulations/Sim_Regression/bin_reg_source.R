@@ -52,11 +52,13 @@ simdat_reg_POWER <- expand.grid(
 
 ## logit function
 # p is probability(event)
+# returns the probability on the logit scale
 logit <- function(p){
   log(p/(1-p))
 }
 
 ## backtransform logit in p(event)
+# returns the probability of occurence (event)
 expit <- function(x){
   exp(x)/(1 + exp(x))
 }
@@ -65,6 +67,8 @@ expit <- function(x){
 # ndos: ncolumns
 # nresp: nrows
 # value to fill each cell
+# returns a matrix with dimensions ndos (columns) and nresp (rows)
+# and cells filled with mi
 mi0ed <- function(mi=10, ndos=4, nresp=3){
   mimat <- matrix(rep(mi, times=ndos*nresp), 
                   ncol=ndos)
@@ -73,6 +77,9 @@ mi0ed <- function(mi=10, ndos=4, nresp=3){
 
 ## helper function for parameter input; 
 ## build a list of binomial distribution parameters
+# size: cluster size
+# prob: probability of occurence
+# returns a list with the parameters of the binomial distribution (p and n)
 paralistbin <- function(size=1, prob){
   sv <- rep(size, length.out=length(prob))
   outlist <- list()
@@ -81,8 +88,11 @@ paralistbin <- function(size=1, prob){
   return(outlist)
 } 
 
-## define an correlated matrix
-# 1 on the diagonal, correlation on offdiagonal
+## define a correlated matrix
+# Sigma: vector filled with 1, length defines number of columns and rows
+# corr: correlation
+# returns a matrix with n(Sigma) columns and rows with ones on the diagonal
+# and correlation on offdiagonal
 equicorrvc <- function(sigma, corr){
   nresp <- length(sigma)
   ECM <- matrix(rep(corr, times=nresp^2),ncol=nresp)
@@ -91,13 +101,36 @@ equicorrvc <- function(sigma, corr){
   return(VCM)
 }
 
-# Generate correlated binary data function --------------------------------
+# helper function for correlated bin
+# Converts the matrix my.mat to a vector, replacing any zeros with 999.
+# Finds the indices of the minimum value in this transformed vector.
+# Converts these vector indices back to row and column indices of the original matrix.
+# Returns the row and column indices as a vector.
+loc.min <- function(my.mat, d){
+  w=is.matrix(my.mat)
+  if (w==F){
+    stop("This is not a matrix!\n")
+  }
+  if (nrow(my.mat)!=ncol(my.mat)){
+    stop("This is not a square matrix!\n")
+  }
+  n=nrow(my.mat)
+  my.vec=as.vector(t(my.mat))
+  my.vec[my.vec==0]=999
+  my.index=min((1:length(my.vec))[my.vec==min(my.vec)])
+  row.index=floor((my.index-1)/n)+1
+  col.index=my.index-d*floor((my.index-1)/n)
+  c(row.index,col.index)
+}
+
+
 # generate correlated binary data with respective parameters for regression models
+# (for FWER simulation)
 # ntrt: sample size of group
 # mutrt: probability of group on logitscale
 # covmat: correlation matrix of endpoints
 # size: cluster size (binary data = 1)
-
+# returns a data frame with the correlated binary data depending on the parameter values
 reg_simind_corbin_prv <- function(ntrt, mutrt, covmat, size){
   
   noend <- ncol(covmat) 
@@ -132,13 +165,14 @@ reg_simind_corbin_prv <- function(ntrt, mutrt, covmat, size){
   
 }
 # generate correlated binary data with respective parameters for regression models
+# (for Power simulation)
 # ntrt: sample size of group
 # mutrt: probability of group on logitscale
 # covmat: correlation matrix of endpoints
 # size: cluster size (binary data = 1)
 # hyp: defines for which hypothesis the data should be generated (h0 or ha)
 # neph0: number of endpoints under h0
-
+# returns a data frame with the correlated binary data depending on the parameter values
 reg_pow_simind_corbin_prv <- function(ntrt, mutrt, covmat, size, hyp, neph0){
   
   noend <- ncol(covmat) 
@@ -178,7 +212,8 @@ reg_pow_simind_corbin_prv <- function(ntrt, mutrt, covmat, size, hyp, neph0){
 # d: number of endpoints
 # prop.vec: probability vector of respective group
 # corr.mat: correlation matrix of endpoints
-
+# returns a matrix of correlated binary data based on the provided probability 
+# vector and correlation matrix.
 draw_correlated_binary <- function (no.row, d, prop.vec, corr.mat) 
 {
   alpha = matrix(0, d, d)
@@ -281,28 +316,6 @@ draw_correlated_binary <- function (no.row, d, prop.vec, corr.mat)
   }
 }
 
-# helper function for correlated bin
-# Converts the matrix my.mat to a vector, replacing any zeros with 999.
-# Finds the indices of the minimum value in this transformed vector.
-# Converts these vector indices back to row and column indices of the original matrix.
-# Returns the row and column indices as a vector.
-
-loc.min <- function(my.mat, d){
-  w=is.matrix(my.mat)
-  if (w==F){
-    stop("This is not a matrix!\n")
-  }
-  if (nrow(my.mat)!=ncol(my.mat)){
-    stop("This is not a square matrix!\n")
-  }
-  n=nrow(my.mat)
-  my.vec=as.vector(t(my.mat))
-  my.vec[my.vec==0]=999
-  my.index=min((1:length(my.vec))[my.vec==min(my.vec)])
-  row.index=floor((my.index-1)/n)+1
-  col.index=my.index-d*floor((my.index-1)/n)
-  c(row.index,col.index)
-}
 
 
 

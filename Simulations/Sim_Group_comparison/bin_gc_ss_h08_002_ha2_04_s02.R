@@ -23,7 +23,11 @@ library("arm")
 # alpha: type 1 error
 # size: cluster size (=1 for binary data)
 # di: dose groups
-sim_mmm_bin <- function(method, 
+# The corresponding chosen model is fitted to the simulated data for each endpoint 
+# and then a correction is made for the p-values of the parameters of interest 
+# using the selected method. The parameters used and the corresponding results 
+# are returned in a data frame.
+sim_mmm_bin_gc_h08002_ha204s02 <- function(method, 
                         model, 
                         nsim, 
                         nboot,
@@ -272,11 +276,11 @@ sim_mmm_bin <- function(method,
 }
 
 
-system.time(sim_mmm_bin_res <- do.call(rbind,apply(as.matrix(simdat), 1, 
-                                                   function(x){sim_mmm_bin(method=unname(x[1]),model=unname(x[2]),
+system.time(sim_mmm_bin_gc_h08002_ha204s02_res <- do.call(rbind,apply(as.matrix(simdat), 1, 
+                                                   function(x){sim_mmm_bin_gc_h08002_ha204s02(method=unname(x[1]),model=unname(x[2]),
                                                                            nsim=unname(x[3]),nboot=unname(x[4]),
                                                                            ntrt=unname(x[5]),
                                                                            corr=unname(x[6]))})))
   
-write.csv(sim_mmm_bin_res, paste0(".\\intermediate_results\\bin_gc_ss_h08_002_ha2_04_s02_",args[1],".csv"), 
+write.csv(sim_mmm_bin_gc_h08002_ha204s02_res, paste0(".\\intermediate_results\\bin_gc_ss_h08_002_ha2_04_s02_",args[1],".csv"), 
           row.names = FALSE)

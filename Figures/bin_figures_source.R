@@ -2,6 +2,8 @@
 # Plot helper functions ---------------------------------------------------
 
 # Removes decimals from zero
+# Returns a number or vector from which all zeros at the end of a decimal 
+# number have been removed
 prettyZero <- function(l) {
   max.decimals = max(nchar(str_extract(l, "\\.[0-9]+")), na.rm = T) - 1
   lnew = formatC(
@@ -18,6 +20,8 @@ prettyZero <- function(l) {
 # FWER Regression model functions -----------------------------------------
 
 # read and append all intermediate results from FWER simulations of regression models
+# returns a data frame with all combined FWER regression data frames from the 
+# specific directory
 r_a_a_bin_reg_FWER_csvs <- function(directory) {
   # List all files in the directory
   files <- list.files(directory, pattern = "^bin_reg_FWER.*\\.csv$", full.names = TRUE)
@@ -32,6 +36,7 @@ r_a_a_bin_reg_FWER_csvs <- function(directory) {
 }
 
 # summarise and calculate percentages for FWER intermediate results
+# returns the summarised FWER regression data frame
 s_a_cp_bin_reg_FWER <- function(dataframe) {
   
   df_sum_cp <-
@@ -59,6 +64,8 @@ s_a_cp_bin_reg_FWER <- function(dataframe) {
 # Power regression model functions ----------------------------------------
 
 # read and append all intermediate results from Power simulations of regression models
+# returns a data frame with all combined Power regression data frames from the 
+# specific directory
 r_a_a_bin_reg_Power_csvs <- function(directory) {
   # List all files in the directory
   files <- list.files(directory, pattern = "^bin_reg_POWER.*\\.csv$", full.names = TRUE)
@@ -73,6 +80,7 @@ r_a_a_bin_reg_Power_csvs <- function(directory) {
 }
 
 # summarise and calculate percentages for Power intermediate results
+# returns the summarised power regression data frame
 s_a_cp_bin_reg_Power <- function(dataframe) {
   
   df_sum_cp <-
@@ -112,6 +120,8 @@ s_a_cp_bin_reg_Power <- function(dataframe) {
 # Group Comparisons model functions ----------------------------------------
 
 # read and append all intermediate results from GC models
+# returns a data frame with all combined group comparison data frames from the 
+# specific directory
 r_a_a_bin_gc_ss_csvs <- function(directory) {
   # Get a list of all CSV files in the specified folder
   files <- list.files(directory, pattern = "bin_gc_ss.*\\.csv$", full.names = TRUE)
@@ -133,6 +143,7 @@ r_a_a_bin_gc_ss_csvs <- function(directory) {
 }
 
 # summarise and calculate percentages for Power intermediate results
+# returns the summarised group comparison data frame
 s_a_cp_bin_gc_ss <- function(dataframe) {
   
   df_sum_cp <- dataframe %>%
@@ -171,18 +182,9 @@ s_a_cp_bin_gc_ss <- function(dataframe) {
                                setting == 'h08_002_ha2_04' ~ 'h08_002_ha2_04_s03',
                                setting == 'h08_04_ha2_01' ~ 'h08_04_ha2_01_s03',
                                setting == 'h08_04_ha2_002' ~ 'h08_04_ha2_002_s03',
-                               setting == 'h02_01_ha8_04_d01' ~ 'h02_01_ha8_04_d01',
-                               setting == 'h02_01_ha8_04_d02' ~ 'h02_01_ha8_04_d02',
-                               setting == 'h02_01_ha8_04_s01' ~ 'h02_01_ha8_04_s01',
-                               setting == 'h02_01_ha8_04_s02' ~ 'h02_01_ha8_04_s02',
-                               setting == 'h02_002_ha8_04_d01' ~ 'h02_002_ha8_04_d01',
-                               setting == 'h02_002_ha8_04_d02' ~ 'h02_002_ha8_04_d02',
-                               setting == 'h02_002_ha8_04_s01' ~ 'h02_002_ha8_04_s01',
-                               setting == 'h02_002_ha8_04_s02' ~ 'h02_002_ha8_04_s02',
-                               setting == 'h02_04_ha8_01_d01' ~ 'h02_04_ha8_01_d01',
-                               setting == 'h02_04_ha8_01_d02' ~ 'h02_04_ha8_01_d02',
                                .default = as.character(setting))) %>%
     mutate(N = ntrt * 4, cor = corr) 
+# some setting names have been changed to be consistent with the other names
   
   df_sum_cp$model <- factor(df_sum_cp$model)
   df_sum_cp$model <- relevel(df_sum_cp$model, ref = "glm")
@@ -190,8 +192,8 @@ s_a_cp_bin_gc_ss <- function(dataframe) {
   return(df_sum_cp)
 }
 
-# long to wide format
-
+# change from long to wide format
+# returns a wide format data frame
 l_t_w_bin_gc_ss <- function(longdataframe){
   
   # if not all settings have the same number of simulations,

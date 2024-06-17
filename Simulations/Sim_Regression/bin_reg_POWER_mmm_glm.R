@@ -20,8 +20,12 @@ library("tidyverse")
 # corr: correlation between endpoints
 # di: dose groups
 # alpha: type 1 error
-
-sim_mmm_bin <- function(nsim, 
+# This function simulates correlated binary data with the corresponding parameters. 
+# A GLM is fitted to the simulated data for each endpoint and 
+# then a correction for the p-values of the parameters of interest is performed 
+# using the MMM approach. The parameters used and the corresponding 
+# results to obtain the Power are returned in a data frame. 
+sim_mmm_bin_power_mmm_glm <- function(nsim, 
                         ntrt, 
                         pi0, 
                         nep_h0, 
@@ -126,11 +130,11 @@ sim_mmm_bin <- function(nsim,
 simdat <- filter(simdat_reg_POWER, (nep_h0+nep_ha)==10)
 
 
-system.time(sim_mmm_bin_res <- do.call(rbind,apply(as.matrix(simdat), 1, 
-                                                   function(x){sim_mmm_bin(nsim=unname(x[1]),ntrt=unname(x[2]),pi0=unname(x[3]), 
+system.time(sim_mmm_bin_power_mmm_glm_res <- do.call(rbind,apply(as.matrix(simdat), 1, 
+                                                   function(x){sim_mmm_bin_power_mmm_glm(nsim=unname(x[1]),ntrt=unname(x[2]),pi0=unname(x[3]), 
                                                                            nep_h0=unname(x[4]),nep_ha=unname(x[5]),slope=unname(x[6]),
                                                                            size=unname(x[7]),corr=unname(x[8]))})))
 
-write.csv(sim_mmm_bin_res, ".\\intermediate_results\\bin_reg_POWER_mmm_glm_1.csv", row.names = FALSE)
+write.csv(sim_mmm_bin_power_mmm_glm_res, ".\\intermediate_results\\bin_reg_POWER_mmm_glm_1.csv", row.names = FALSE)
 
 

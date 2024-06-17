@@ -234,11 +234,11 @@ fwer_mmm_bonf <-
   guides(color = guide_legend(title = "N:cor"), shape = guide_legend(order = 1)) + theme(legend.position =
                                                                                            "bottom")
 
-#plot_gc_FWER <-
+plot_gc_FWER <-
   fwer_mmm_bt + fwer_mmm_bonf + plot_layout(guides = "collect") &
   theme(legend.position = 'bottom')
 
-plot_gc_FWER
+#plot_gc_FWER
 
 ggsave(
   ".\\Budig_Figure_4.eps",
@@ -293,11 +293,11 @@ power_mmm_bonf <-
   scale_x_continuous(limits = c(0, 1)) +
   theme(legend.position = "bottom")
 
-#plot_gc_POWER <-
+plot_gc_POWER <-
   power_mmm_bt + power_mmm_bonf + plot_layout(guides = "collect") &
   theme(legend.position = 'bottom')
 
-plot_gc_POWER
+#plot_gc_POWER
 
 ggsave(
   ".\\Budig_Figure_5.eps",

@@ -53,9 +53,11 @@ It contains four subfolders with the following files:
 This folder contains the R script "Example_Analysis_NTP_CAS NO. 93-15-2.R" for 
 analysis of the example data (NTP bioassay) from Section 4 of the manuscript.
 The data set can be analysed using both a regression approach and group comparison models. 
+
 	./data/
 	This folder contains the data set "miceF.rda", which can be imported and analysed 
 	using the R script "Example_Analysis_NTP_CAS NO. 93-15-2.R"
+
 	./results/
 	A subfolder containing tables of the estimated effect sizes, standard errors and p-values 
 	for the regression and group comparison models and the three methods. 

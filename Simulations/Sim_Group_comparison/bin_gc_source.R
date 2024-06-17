@@ -28,11 +28,13 @@ simdat <- expand.grid(
 
 ## logit function
 # p is probability(event)
+# returns the probability on the logit scale
 logit <- function(p){
   log(p/(1-p))
 }
 
 ## backtransform logit in p(event)
+# returns the probability of occurence (event)
 expit <- function(x){
   exp(x)/(1 + exp(x))
 }
@@ -41,23 +43,34 @@ expit <- function(x){
 # ndos: ncolumns
 # nresp: nrows
 # value to fill each cell
+# returns a matrix with dimensions ndos (columns) and nresp (rows)
+# and cells filled with mi
 mi0ed <- function(mi=10, ndos=4, nresp=3){
-  mimat <- matrix(rep(mi, times=ndos*nresp), ncol=ndos)
+  mimat <- matrix(rep(mi, times=ndos*nresp), 
+                  ncol=ndos)
   return(mimat)
 }
 
 ## helper function for parameter input; 
 ## build a list of binomial distribution parameters
+# size: cluster size
+# prob: probability of occurence
+# returns a list with the parameters of the binomial distribution (p and n)
 paralistbin <- function(size=1, prob){
   sv <- rep(size, length.out=length(prob))
   outlist <- list()
-  for(i in 1:length(prob)){outlist[[i]] <- list(size=sv[i], prob=prob[i])}
+  for(i in 1:length(prob)){outlist[[i]] <- list(size=sv[i], 
+                                                prob=prob[i])}
   return(outlist)
 } 
+
 # paralistbin(size=10, prob=c(0.6,0.2,0.2))
 
-## define an correlated matrix
-# 1 on the diagonal, correlation on offdiagonal
+## define a correlated matrix
+# Sigma: vector filled with 1, length defines number of columns and rows
+# corr: correlation
+# returns a matrix with n(Sigma) columns and rows with ones on the diagonal
+# and correlation on offdiagonal
 equicorrvc <- function(sigma, corr){
   nresp <- length(sigma)
   ECM <- matrix(rep(corr, times=nresp^2),ncol=nresp)
@@ -71,7 +84,7 @@ equicorrvc <- function(sigma, corr){
 # Finds the indices of the minimum value in this transformed vector.
 # Converts these vector indices back to row and column indices of the original matrix.
 # Returns the row and column indices as a vector.
-loc.min <- function(my.mat,d){
+loc.min <- function(my.mat, d){
   w=is.matrix(my.mat)
   if (w==F){
     stop("This is not a matrix!\n")
@@ -95,6 +108,7 @@ loc.min <- function(my.mat,d){
 # size: cluster size (binary data = 1)
 # stage: defines for which Endpoint
 # NRESP: number of endpoints
+# returns a data frame with the correlated binary data depending on the parameter values
 simind_corbin_prv <- function(ntrt, mutrt, covmat, size, stage, NRESP){
   
   noend <- ncol(covmat) 
@@ -127,7 +141,8 @@ simind_corbin_prv <- function(ntrt, mutrt, covmat, size, stage, NRESP){
 # d: number of endpoints
 # prop.vec: probability vector of respective group
 # corr.mat: correlation matrix of endpoints
-
+# returns a matrix of correlated binary data based on the provided probability 
+# vector and correlation matrix.
 draw_correlated_binary<- function (no.row, d, prop.vec, corr.mat) 
 {
   alpha = matrix(0, d, d)
